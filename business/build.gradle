@@ -1,0 +1,64 @@
+plugins {
+    id 'com.android.library'
+    id 'kotlin-android'
+    id 'kotlin-kapt'
+}
+
+if (isBusinessModule.toBoolean()) {
+    apply plugin: 'com.android.library'
+} else {
+    apply plugin: 'com.android.application'
+}
+
+def root_android = rootProject.ext.android
+def root_kapt = rootProject.ext.kapt
+
+android {
+    resourcePrefix "business_"
+
+    defaultConfig {
+        minSdkVersion root_android.minSdkVersion
+        targetSdkVersion root_android.targetSdkVersion
+        compileSdkVersion root_android.compileSdkVersion
+        versionCode root_android.versionCode
+        versionName root_android.versionName
+
+        if (!isBusinessModule.toBoolean()) {
+            applicationId "com.chenxuan.kotlin.business"
+        }
+    }
+
+    sourceSets {
+        main {
+            if (isBusinessModule.toBoolean()) {
+                manifest.srcFile 'src/main/AndroidManifest.xml'
+            } else {
+                manifest.srcFile 'src/main/manifest/AndroidManifest.xml'
+            }
+        }
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+        }
+    }
+
+    buildFeatures {
+        viewBinding true
+    }
+}
+
+kapt {
+    arguments {
+        arg("AROUTER_MODULE_NAME", project.getName())
+    }
+}
+
+dependencies {
+    implementation fileTree(dir: 'libs', include: ['*.jar'])
+    implementation project(path: ':common')
+    implementation project(path: ':net')
+    kapt root_kapt.arouter_compiler
+}
